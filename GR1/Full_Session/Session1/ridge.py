@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 
 def get_data(path):
-	data = pd.read_csv(path, index_col='I')
-	return data.iloc[:, :15],data['B']
+	data = pd.read_csv(path)
+	return data[['A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11','A12','A13','A14','A15']],data['B']
 def normalize_and_add_ones(X):
 	X = np.array(X)
 	X_max = np.array([[np.amax(X[:,column_id])
@@ -94,9 +94,9 @@ if __name__ == '__main__':
 
 	ridge_regression = RidgeRegression()
 	best_LAMBDA = ridge_regression.get_the_best_LAMBDA(X_train,Y_train)
-	print 'Best LAMBDA: ', best_LAMBDA
+	print('Best LAMBDA: ', best_LAMBDA)
 	W_learned = ridge_regression.fit(X_train=X_train, Y_train=Y_train, LAMBDA=best_LAMBDA)
 	Y_predicted = ridge_regression.predict(W=W_learned, X_new=X_test)
 
-	print ridge_regression.compute_RSS(Y_new=Y_test, Y_predicted=Y_predicted)
+	print(ridge_regression.compute_RSS(Y_new=Y_test, Y_predicted=Y_predicted))
 
