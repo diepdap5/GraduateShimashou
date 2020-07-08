@@ -2,7 +2,7 @@ import tensorflow.compat.v1 as tf
 import numpy as np
 
 tf.disable_eager_execution()
-NUM_CLASSES = 4
+NUM_CLASSES = 20
 MAX_STEP = 1000
 
 class MLP:
@@ -171,7 +171,7 @@ if __name__ == '__main__':
           name=variable.name,
           value=variable.eval(),
           epoch=train_data_reader._num_epoch
-        )
+  #       )
 
   # Đánh giá model trên test data
   test_data_reader = DataReader(
@@ -180,28 +180,29 @@ if __name__ == '__main__':
     vocab_size=vocab_size
   )
   with tf.Session() as sess:
-    epoch = int((MAX_STEP)/225)
+    for epoch in range(45):
+      #epoch = int((MAX_STEP)/225)
 
-    trainable_variables = tf.trainable_variables()
-    for variable in trainable_variables:
-      saved_value = restore_parameters(variable.name, epoch)
-      assign_op = variable.assign(saved_value)
-      sess.run(assign_op)
+      trainable_variables = tf.trainable_variables()
+      for variable in trainable_variables:
+        saved_value = restore_parameters(variable.name, epoch)
+        assign_op = variable.assign(saved_value)
+        sess.run(assign_op)
+      num_true_preds = 0
+      while True:
+        test_data, test_labels = test_data_reader.next_batch()
+        test_plabels_eval = sess.run(
+          predicted_labels,
+          feed_dict={
+            mlp._X: test_data,
+            mlp._real_Y: test_labels
+          }
+        )
+        matches = np.equal(test_plabels_eval, test_labels)
+        print('matches: ',matches)
+        num_true_preds += np.sum(matches.astype(float))
 
-    num_true_preds = 0
-    while True:
-      test_data, test_labels = test_data_reader.next_batch()
-      test_plabels_eval = sess.run(
-        predicted_labels,
-        feed_dict={
-          mlp._X: test_data,
-          mlp._real_Y: test_labels
-        }
-      )
-      matches = np.equal(test_plabels_eval, test_labels)
-      num_true_preds += np.sum(matches.astype(float))
-
-      if test_data_reader._batch_id == 0:
-        break
-    print('Epoch:', epoch)
-    print('Accuracy on test data:', num_true_preds / len(test_data_reader._data))
+        if test_data_reader._batch_id == 0:
+          break
+      print('Epoch:', epoch)
+      print('Accuracy on test data:', num_true_preds / len(test_data_reader._data))
